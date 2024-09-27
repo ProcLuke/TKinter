@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from os.path import basename, splitext
+from os.path import exists
 import tkinter as tk
 
 # from tkinter import ttk
@@ -139,6 +140,8 @@ class Application(tk.Tk):
                 f.write(c.cget("background")+"\n")
     
     def colorLoad(self):
+        if not exists("colors.txt"):
+            return
         with open("colors.txt", "r") as f:
             color = f.readline().strip()
             self.canvas.config(background=color)
@@ -150,6 +153,7 @@ class Application(tk.Tk):
             self.varB.set(b)
             for canvas in self.canvaslist:
                 canvas.config(background=f.readline().strip())
+
 
 
 
