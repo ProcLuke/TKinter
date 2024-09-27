@@ -45,8 +45,9 @@ class Application(tk.Tk):
         super().__init__(className=self.name)
         self.title(self.name)
         self.bind("<Escape>", self.quit)
-        self.lblMain = tk.Label(self, text="Color mishma")
         self.btnQuit = tk.Button(self, text="Quit", command=self.quit)
+        self.lblMain = tk.Label(self, text="Color mishma")
+
         self.frameR = tk.Frame(self)
         self.frameG = tk.Frame(self)
         self.frameB = tk.Frame(self)
@@ -97,13 +98,18 @@ class Application(tk.Tk):
         self.canvas.pack(side=tk.TOP, fill="both")
         self.frameMem.pack(side=tk.TOP, fill="both")
 
-        canvaslist = []
+        self.canvaslist = []
         for row in range(3):
             for col in range(7):
                 canvas = tk.Canvas(self.frameMem, width=50, height=50, bg="#12abc3")
                 canvas.bind("<Button-1>", self.clickHandler)
                 canvas.grid(row=row, column=col)
-                canvaslist.append
+                self.canvaslist.append(canvas)
+        
+        self.colorLoad()
+
+
+
     
     def clickHandler(self, event):
         if self.cget("cursor") != "pencil":
@@ -126,11 +132,33 @@ class Application(tk.Tk):
         b = self.scaleB.get()
         self.canvas.config(background=f"#{r:02X}{g:02X}{b:02X}")
 
+    def colorSave(self):
+        with open("colors.txt", "w") as f:
+            f.write(self.canvas.cget("background")+"\n")
+            for c in self.canvaslist:
+                f.write(c.cget("background")+"\n")
+    
+    def colorLoad(self):
+        with open("colors.txt", "r") as f:
+            color = f.readline().strip()
+            self.canvas.config(background=color)
+            r = int(color[1:3], 16)
+            g = int(color[3:5], 16)
+            b = int(color[5:], 16)
+            self.varR.set(r)
+            self.varG.set(g)
+            self.varB.set(b)
+            for canvas in self.canvaslist:
+                canvas.config(background=f.readline().strip())
+
+
+
     def about(self):
         window = About(self)
         window.grab_set()
 
     def quit(self, event=None):
+        self.colorSave()
         super().quit()
 
 
