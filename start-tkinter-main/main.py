@@ -3,6 +3,7 @@
 from os.path import basename, splitext
 from os.path import exists
 import tkinter as tk
+import datetime
 
 # from tkinter import ttk
 
@@ -48,6 +49,8 @@ class Application(tk.Tk):
         self.bind("<Escape>", self.quit)
         self.btnQuit = tk.Button(self, text="Quit", command=self.quit)
         self.lblMain = tk.Label(self, text="Color mishma")
+        self.lblMain.bind("<Button-1>", self.time_update_handler)
+        self.time_update()
 
         self.frameR = tk.Frame(self)
         self.frameG = tk.Frame(self)
@@ -133,6 +136,15 @@ class Application(tk.Tk):
         b = self.scaleB.get()
         self.canvas.config(background=f"#{r:02X}{g:02X}{b:02X}")
 
+    def time_update(self):
+        time = datetime.datetime.now().replace(microsecond=0)
+        self.lblMain.configure(text = time)
+        self.lblMain.after(1000, self.time_update)
+
+    def time_update_handler(self, 
+                            event):
+        self.lblMain.after_cancel()
+
     def colorSave(self):
         with open("colors.txt", "w") as f:
             f.write(self.canvas.cget("background")+"\n")
@@ -143,19 +155,19 @@ class Application(tk.Tk):
         if not exists("colors.txt"):
             return
         with open("colors.txt", "r") as f:
-            color = f.readline().strip()
-            self.canvas.config(background=color)
-            r = int(color[1:3], 16)
-            g = int(color[3:5], 16)
-            b = int(color[5:], 16)
-            self.varR.set(r)
-            self.varG.set(g)
-            self.varB.set(b)
-            for canvas in self.canvaslist:
-                canvas.config(background=f.readline().strip())
-
-
-
+            try:
+                color = f.readline().strip()
+                self.canvas.config(background=color)
+                r = int(color[1:3], 16)
+                g = int(color[3:5], 16)
+                b = int(color[5:], 16)
+                self.varR.set(r)
+                self.varG.set(g)
+                self.varB.set(b)
+                for canvas in self.canvaslist:
+                    canvas.config(background=f.readline().strip())
+            except (ValueError, tk.TclError):
+                pass
 
     def about(self):
         window = About(self)
@@ -164,6 +176,9 @@ class Application(tk.Tk):
     def quit(self, event=None):
         self.colorSave()
         super().quit()
+
+    def destroy(self):
+        super().destroy()
 
 
 app = Application()
